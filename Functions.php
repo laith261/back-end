@@ -1,7 +1,7 @@
 <?php
 session_start();
 require "quickQueries.php";
-$qq = new quickQueries("localhost", "root", "", "store");
+$qq = new quickQueries("localhost", "root", "", "new");
 
 $uid = getUserInfo("a");
 $gid = getUserInfo("x");
@@ -18,13 +18,14 @@ function inArray($data, $in)
     return true;
 }
 // get pages pagination
-function pages($page,$stmt){
+function pages($page, $stmt)
+{
     global $qn;
     $page = $page;
     $count = 10;
     $offset = $qn->nums($qn->quiry($stmt));
     $offset = $offset > $count ? ceil($offset / $count) : 0;
-    return array("stmt"=>"LIMIT $offset,$count","isFinish" =>$offset==0 || $page == $offset);
+    return array("stmt" => "LIMIT $offset,$count", "isFinish" => $offset == 0 || $page == $offset);
 }
 // show errors
 function errors()
@@ -36,66 +37,41 @@ function errors()
 // get user info
 function getUserInfo($data)
 {
-    $respon="";
-    if(isset($_COOKIE[$data]) && !isset($_SESSION[$data])){
-        $_SESSION[$data]=$_COOKIE[$data];
+    $respon = "";
+    if (isset($_COOKIE[$data]) && !isset($_SESSION[$data])) {
+        $_SESSION[$data] = $_COOKIE[$data];
     }
-    $respon=isset($_SESSION[$data])?$_SESSION[$data]:"";
+    $respon = isset($_SESSION[$data]) ? $_SESSION[$data] : "";
     return dehash($respon);
 }
 
 // hash the string
-function enhash($text){
-    $text=strrev($text);
-    $text=base64_encode($text);
-    $text=strrev($text);
-    $text=base64_encode($text);
-    $text=substr($text,0,2).strrev(substr($text,2,-2)).substr($text,-2);
+function enhash($text)
+{
+    $text = strrev($text);
+    $text = base64_encode($text);
+    $text = strrev($text);
+    $text = base64_encode($text);
+    $text = substr($text, 0, 2) . strrev(substr($text, 2, -2)) . substr($text, -2);
     return $text;
 }
 
 // unhash the string
-function dehash($text){
-    $text=substr($text,0,2).strrev(substr($text,2,-2)).substr($text,-2);
-    $text=base64_decode($text);
-    $text=strrev($text);
-    $text=base64_decode($text);
-    $text=strrev($text);
+function dehash($text)
+{
+    $text = substr($text, 0, 2) . strrev(substr($text, 2, -2)) . substr($text, -2);
+    $text = base64_decode($text);
+    $text = strrev($text);
+    $text = base64_decode($text);
+    $text = strrev($text);
     return $text;
 }
 
-
-function sendNotify($title,$body,$topic){
-    $SERVER_API_KEY = 'AAAAdd_Qhd0:APA91bEp86ZmgpZxy9D8nywtodxauQDp3-xQJOtByPXv9zCj6XfI4ZUEkS0iBDA8FGdjZPuXNgYDNEGiLKp5Z_vxtJm54RdqJ1KUNdYNN03QHPh2G3whAkoKYd4lF--SkdPoQarkblqe';
-    $data = [
-        "to"=>"/topics/$topic",
-        "notification" => [
-            "title" => $title,
-            "body" => $body,
-            "sound"=> "default"
-        ],
-    ];
-    $dataString = json_encode($data);
-    $headers = [
-        "Authorization: key=$SERVER_API_KEY",
-        "Content-Type: application/json; UTF-8",
-    ];
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
-    $response = curl_exec($ch);
-    echo $response;
-}
-
 // is user allowed
-function allowed($data = array(),$in = array(),$to=null)
+function allowed($data = array(), $in = array(), $to = null)
 {
     if (!inArray($data, $in)) {
-        if(is_null($to)){
+        if (is_null($to)) {
             die();
         }
         header("location:$to");
@@ -110,16 +86,45 @@ function json($mess)
 }
 
 // is all data not empty
-function isRequred($data=array()){
-    $status=false;
-    foreach ($data as $key => $value) {
-        if($value==""){
-            $status=true;
+function allFill($data = array())
+{
+    foreach (array_values($data) as $value) {
+        if ($value == "") {
+            $status = true;
             break;
         }
     }
-    return $status;
+    return false;
 }
+//
+function validEmail($email)
+{
+    $req = "/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/";
+    return !preg_match($req, $email);
+}
+//
+function validPhone($phone)
+{
+    $req = "/^009640?7(7|5|8)\d{8}$/";
+    return !preg_match($req, $phone);
+}
+//
+function validPassword($password)
+{
+    if (strlen($password) < 6) {
+        return true;
+    }
+    return false;
+}
+
+function isInDb($table, $data)
+{
+    global $qq;
+    $query = $qq->select($table, $data);
+    $nums = $qq->nums($query);
+    return $nums > 0;
+}
+
 
 // function singIn($data)
 // {

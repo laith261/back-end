@@ -12,7 +12,7 @@ class quickQueries
             mysqli_options($this->$con, MYSQLI_OPT_INT_AND_FLOAT_NATIVE, true);
             return $this->$con;
         } else {
-            echo  mysqli_connect_error();
+            return  mysqli_connect_error();
         }
     }
 
