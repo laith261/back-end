@@ -1,6 +1,7 @@
 <?php
 session_start();
 require "quickQueries.php";
+require "Validtion.php";
 $qq = new quickQueries("localhost", "root", "", "new");
 
 $uid = getUserInfo("a");
@@ -83,46 +84,6 @@ function json($mess)
 {
     echo json_encode($mess);
     exit();
-}
-
-// is all data not empty
-function allFill($data = array())
-{
-    foreach (array_values($data) as $value) {
-        if ($value == "") {
-            $status = true;
-            break;
-        }
-    }
-    return false;
-}
-//
-function validEmail($email)
-{
-    $req = "/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/";
-    return !preg_match($req, $email);
-}
-//
-function validPhone($phone)
-{
-    $req = "/^009640?7(7|5|8)\d{8}$/";
-    return !preg_match($req, $phone);
-}
-//
-function validPassword($password)
-{
-    if (strlen($password) < 6) {
-        return true;
-    }
-    return false;
-}
-
-function isInDb($table, $data)
-{
-    global $qq;
-    $query = $qq->select($table, $data);
-    $nums = $qq->nums($query);
-    return $nums > 0;
 }
 
 

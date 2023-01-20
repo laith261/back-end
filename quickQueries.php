@@ -126,6 +126,13 @@ class quickQueries
         return mysqli_insert_id($this->$con);
     }
 
+    function isInDb($table, $data)
+    {
+        $query = $this->select($table, $data);
+        $nums = $this->nums($query);
+        return $nums > 0;
+    }
+
     // make statement
     private function statement($values = array())
     {
